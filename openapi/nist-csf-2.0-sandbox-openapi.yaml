@@ -1,0 +1,1838 @@
+openapi: 3.1.0
+info:
+  title: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API
+  version: 1.0.0
+  description: |
+    A **sandbox / simulation** API that lets enterprises report against the
+    [NIST Cybersecurity Framework 2.0](https://www.nist.gov/cyberframework).
+
+    ## Key Concepts
+
+    | Concept | Description |
+    |---------|-------------|
+    | **Function** | Top-level outcome — Govern (GV), Identify (ID), Protect (PR), Detect (DE), Respond (RS), Recover (RC) |
+    | **Category** | Group of related outcomes within a Function |
+    | **Subcategory** | Specific technical / management outcome |
+    | **Implementation Tier** | 1 – Partial · 2 – Risk Informed · 3 – Repeatable · 4 – Adaptive |
+    | **Organizational Profile** | Snapshot of current or target cybersecurity posture |
+    | **Assessment** | Evaluation of an organization against the CSF |
+    | **Gap Analysis** | Comparison between Current and Target profiles |
+
+    ## Microcks
+    Every operation carries `examples` so the spec can be imported directly into
+    [Microcks](https://microcks.io) for contract-first mocking.
+  contact:
+    name: NIST CSF 2.0 Sandbox
+    url: https://example.com/nist-csf-sandbox
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+- url: https://sandbox.nist-csf.example.com/api/v1
+  description: Sandbox server
+- url: http://localhost:8080/api/v1
+  description: Local development
+tags:
+- name: CSF Taxonomy
+  description: Read-only NIST CSF 2.0 reference data — Functions, Categories, and Subcategories.
+- name: Organizations
+  description: Enterprise organizations registered in the NIST CSF 2.0 sandbox.
+- name: Profiles
+  description: Current-state and target-state organizational cybersecurity profiles.
+- name: Assessments
+  description: Cybersecurity posture assessments scored against organizational profiles.
+- name: Gap Analysis
+  description: Current-versus-target profile comparisons with prioritized remediation recommendations.
+security:
+- bearerAuth: []
+paths:
+  /csf/functions:
+    get:
+      operationId: listFunctions
+      summary: List all CSF 2.0 Functions
+      tags:
+      - CSF Taxonomy
+      responses:
+        '200':
+          description: All six CSF 2.0 functions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CsfFunction'
+              examples:
+                Default:
+                  summary: All CSF 2.0 Functions
+                  value:
+                  - id: GV
+                    name: Govern
+                    description: Establish and monitor the organization's cybersecurity risk management strategy, expectations,
+                      and policy.
+                  - id: ID
+                    name: Identify
+                    description: Understand the organization's current cybersecurity risk posture.
+                  - id: PR
+                    name: Protect
+                    description: Use safeguards to manage the organization's cybersecurity risks.
+                  - id: DE
+                    name: Detect
+                    description: Find and analyze possible cybersecurity attacks and compromises.
+                  - id: RS
+                    name: Respond
+                    description: Take action regarding a detected cybersecurity incident.
+                  - id: RC
+                    name: Recover
+                    description: Restore assets and operations affected by a cybersecurity incident.
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /csf/functions/{functionId}/categories:
+    get:
+      operationId: listCategories
+      summary: List Categories for a given Function
+      tags:
+      - CSF Taxonomy
+      parameters:
+      - $ref: '#/components/parameters/functionIdPath'
+      responses:
+        '200':
+          description: Categories belonging to the function
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CsfCategory'
+              examples:
+                Default:
+                  summary: Govern (GV) categories
+                  value:
+                  - id: GV.OC
+                    functionId: GV
+                    name: Organizational Context
+                    description: The circumstances — mission, stakeholder expectations, dependencies, and legal, regulatory,
+                      and contractual requirements — surrounding the organization's cybersecurity risk management decisions
+                      are understood.
+                  - id: GV.RM
+                    functionId: GV
+                    name: Risk Management Strategy
+                    description: The organization's priorities, constraints, risk tolerance and appetite statements, and assumptions
+                      are established, communicated, and used to support operational risk decisions.
+                  - id: GV.RR
+                    functionId: GV
+                    name: Roles, Responsibilities, and Authorities
+                    description: Cybersecurity roles, responsibilities, and authorities to foster accountability, performance
+                      assessment, and continuous improvement are established and communicated.
+                  - id: GV.PO
+                    functionId: GV
+                    name: Policy
+                    description: Organizational cybersecurity policy is established, communicated, and enforced.
+                  - id: GV.OV
+                    functionId: GV
+                    name: Oversight
+                    description: Results of organization-wide cybersecurity risk management activities and performance are
+                      used to inform, improve, and adjust the risk management strategy.
+                  - id: GV.SC
+                    functionId: GV
+                    name: Cybersecurity Supply Chain Risk Management
+                    description: Cyber supply chain risk management processes are identified, established, managed, monitored,
+                      and improved by organizational stakeholders.
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /csf/categories/{categoryId}/subcategories:
+    get:
+      operationId: listSubcategories
+      summary: List Subcategories for a given Category
+      tags:
+      - CSF Taxonomy
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: GV.OC
+      responses:
+        '200':
+          description: Subcategories belonging to the category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CsfSubcategory'
+              examples:
+                Default:
+                  summary: GV.OC subcategories
+                  value:
+                  - id: GV.OC-01
+                    categoryId: GV.OC
+                    name: Organizational mission is understood and informs cybersecurity risk management
+                    description: The organizational mission is understood and informs cybersecurity risk management.
+                  - id: GV.OC-02
+                    categoryId: GV.OC
+                    name: Internal and external stakeholders are understood
+                    description: Internal and external stakeholders are understood, and their needs and expectations regarding
+                      cybersecurity risk management are understood and considered.
+                  - id: GV.OC-03
+                    categoryId: GV.OC
+                    name: Legal, regulatory, and contractual requirements are understood
+                    description: Legal, regulatory, and contractual requirements regarding cybersecurity — including privacy
+                      and civil liberties obligations — are understood and managed.
+                  - id: GV.OC-04
+                    categoryId: GV.OC
+                    name: Critical objectives and dependencies are understood
+                    description: Critical objectives, capabilities, and services that external stakeholders depend on or expect
+                      from the organization are understood and communicated.
+                  - id: GV.OC-05
+                    categoryId: GV.OC
+                    name: Outcomes and dependencies for the organization are understood
+                    description: Outcomes, capabilities, and services that the organization depends on are understood and
+                      communicated.
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations:
+    get:
+      operationId: listOrganizations
+      summary: List registered organizations
+      tags:
+      - Organizations
+      parameters:
+      - $ref: '#/components/parameters/limitQuery'
+      - $ref: '#/components/parameters/offsetQuery'
+      responses:
+        '200':
+          description: Paginated list of organizations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationListResponse'
+              examples:
+                Default:
+                  summary: Two organizations
+                  value:
+                    total: 2
+                    limit: 20
+                    offset: 0
+                    items:
+                    - id: org-acme-001
+                      name: Acme Corporation
+                      industry: Manufacturing
+                      size: large
+                      createdAt: '2025-01-15T09:30:00Z'
+                      updatedAt: '2025-06-01T14:22:00Z'
+                    - id: org-globex-002
+                      name: Globex Financial Services
+                      industry: Financial Services
+                      size: enterprise
+                      createdAt: '2025-02-20T11:00:00Z'
+                      updatedAt: '2025-07-10T08:45:00Z'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+    post:
+      operationId: createOrganization
+      summary: Register a new organization
+      tags:
+      - Organizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationCreate'
+            examples:
+              Default:
+                summary: Register Acme Corporation
+                value:
+                  name: Acme Corporation
+                  industry: Manufacturing
+                  size: large
+                  description: Global manufacturing conglomerate with IoT-driven production lines.
+                  contactEmail: ciso@acme.example.com
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                Default:
+                  summary: Acme Corporation created
+                  value:
+                    id: org-acme-001
+                    name: Acme Corporation
+                    industry: Manufacturing
+                    size: large
+                    description: Global manufacturing conglomerate with IoT-driven production lines.
+                    contactEmail: ciso@acme.example.com
+                    createdAt: '2025-01-15T09:30:00Z'
+                    updatedAt: '2025-01-15T09:30:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Organization already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Default:
+                  value:
+                    code: CONFLICT
+                    message: An organization with this name already exists.
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}:
+    get:
+      operationId: getOrganization
+      summary: Get organization details
+      tags:
+      - Organizations
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      responses:
+        '200':
+          description: Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                Default:
+                  summary: Acme Corporation
+                  value:
+                    id: org-acme-001
+                    name: Acme Corporation
+                    industry: Manufacturing
+                    size: large
+                    description: Global manufacturing conglomerate with IoT-driven production lines.
+                    contactEmail: ciso@acme.example.com
+                    createdAt: '2025-01-15T09:30:00Z'
+                    updatedAt: '2025-06-01T14:22:00Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}/profiles:
+    get:
+      operationId: listProfiles
+      summary: List profiles for an organization
+      tags:
+      - Profiles
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - name: type
+        in: query
+        schema:
+          type: string
+          enum:
+          - current
+          - target
+        description: Filter by profile type
+      responses:
+        '200':
+          description: Profiles list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProfileSummary'
+              examples:
+                Default:
+                  summary: Acme's current & target profiles
+                  value:
+                  - id: prof-acme-cur-001
+                    orgId: org-acme-001
+                    name: Acme FY2025 Current Profile
+                    type: current
+                    status: approved
+                    overallTier: 2
+                    createdAt: '2025-03-01T10:00:00Z'
+                    updatedAt: '2025-06-01T14:22:00Z'
+                  - id: prof-acme-tgt-001
+                    orgId: org-acme-001
+                    name: Acme FY2026 Target Profile
+                    type: target
+                    status: draft
+                    overallTier: 3
+                    createdAt: '2025-04-15T08:00:00Z'
+                    updatedAt: '2025-05-20T16:30:00Z'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+    post:
+      operationId: createProfile
+      summary: Create a new organizational profile
+      tags:
+      - Profiles
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+            examples:
+              Default:
+                summary: Create Acme current profile
+                value:
+                  name: Acme FY2025 Current Profile
+                  type: current
+                  overallTier: 2
+                  description: Baseline assessment of Acme's cybersecurity posture as of Q1 FY2025.
+                  functionTiers:
+                  - functionId: GV
+                    tier: 2
+                    notes: Governance policies exist but are inconsistently enforced.
+                  - functionId: ID
+                    tier: 2
+                    notes: Asset inventory is maintained; risk assessments performed annually.
+                  - functionId: PR
+                    tier: 3
+                    notes: Strong access controls and endpoint protection deployed.
+                  - functionId: DE
+                    tier: 2
+                    notes: SIEM deployed; detection rules cover critical assets.
+                  - functionId: RS
+                    tier: 1
+                    notes: Incident response plan exists but has not been tested.
+                  - functionId: RC
+                    tier: 1
+                    notes: Disaster recovery is ad-hoc; no formal recovery exercises.
+                  categoryOutcomes:
+                  - categoryId: GV.OC
+                    tier: 2
+                    currentState: partially_implemented
+                    notes: Mission context documented but not regularly reviewed.
+                  - categoryId: GV.RM
+                    tier: 2
+                    currentState: partially_implemented
+                    notes: Risk appetite statement exists at board level.
+                  - categoryId: GV.RR
+                    tier: 2
+                    currentState: partially_implemented
+                    notes: CISO role established; RACI matrix in progress.
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              examples:
+                Default:
+                  summary: Acme current profile created
+                  value:
+                    id: prof-acme-cur-001
+                    orgId: org-acme-001
+                    name: Acme FY2025 Current Profile
+                    type: current
+                    status: draft
+                    overallTier: 2
+                    description: Baseline assessment of Acme's cybersecurity posture as of Q1 FY2025.
+                    functionTiers:
+                    - functionId: GV
+                      tier: 2
+                      notes: Governance policies exist but are inconsistently enforced.
+                    - functionId: ID
+                      tier: 2
+                      notes: Asset inventory is maintained; risk assessments performed annually.
+                    - functionId: PR
+                      tier: 3
+                      notes: Strong access controls and endpoint protection deployed.
+                    - functionId: DE
+                      tier: 2
+                      notes: SIEM deployed; detection rules cover critical assets.
+                    - functionId: RS
+                      tier: 1
+                      notes: Incident response plan exists but has not been tested.
+                    - functionId: RC
+                      tier: 1
+                      notes: Disaster recovery is ad-hoc; no formal recovery exercises.
+                    categoryOutcomes:
+                    - categoryId: GV.OC
+                      tier: 2
+                      currentState: partially_implemented
+                      notes: Mission context documented but not regularly reviewed.
+                    - categoryId: GV.RM
+                      tier: 2
+                      currentState: partially_implemented
+                      notes: Risk appetite statement exists at board level.
+                    - categoryId: GV.RR
+                      tier: 2
+                      currentState: partially_implemented
+                      notes: CISO role established; RACI matrix in progress.
+                    createdAt: '2025-03-01T10:00:00Z'
+                    updatedAt: '2025-03-01T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}/profiles/{profileId}:
+    get:
+      operationId: getProfile
+      summary: Get a specific profile
+      tags:
+      - Profiles
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - $ref: '#/components/parameters/profileIdPath'
+      responses:
+        '200':
+          description: Full profile detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              examples:
+                Default:
+                  summary: Acme current profile
+                  value:
+                    id: prof-acme-cur-001
+                    orgId: org-acme-001
+                    name: Acme FY2025 Current Profile
+                    type: current
+                    status: approved
+                    overallTier: 2
+                    description: Baseline assessment of Acme's cybersecurity posture as of Q1 FY2025.
+                    functionTiers:
+                    - functionId: GV
+                      tier: 2
+                      notes: Governance policies exist but are inconsistently enforced.
+                    - functionId: ID
+                      tier: 2
+                      notes: Asset inventory is maintained; risk assessments performed annually.
+                    - functionId: PR
+                      tier: 3
+                      notes: Strong access controls and endpoint protection deployed.
+                    - functionId: DE
+                      tier: 2
+                      notes: SIEM deployed; detection rules cover critical assets.
+                    - functionId: RS
+                      tier: 1
+                      notes: Incident response plan exists but has not been tested.
+                    - functionId: RC
+                      tier: 1
+                      notes: Disaster recovery is ad-hoc; no formal recovery exercises.
+                    categoryOutcomes:
+                    - categoryId: GV.OC
+                      tier: 2
+                      currentState: partially_implemented
+                      notes: Mission context documented but not regularly reviewed.
+                    - categoryId: GV.RM
+                      tier: 2
+                      currentState: partially_implemented
+                      notes: Risk appetite statement exists at board level.
+                    - categoryId: GV.RR
+                      tier: 2
+                      currentState: partially_implemented
+                      notes: CISO role established; RACI matrix in progress.
+                    createdAt: '2025-03-01T10:00:00Z'
+                    updatedAt: '2025-06-01T14:22:00Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+    put:
+      operationId: updateProfile
+      summary: Update a profile
+      tags:
+      - Profiles
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - $ref: '#/components/parameters/profileIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+            examples:
+              Default:
+                summary: Approve Acme target profile and bump tier
+                value:
+                  status: approved
+                  overallTier: 3
+                  functionTiers:
+                  - functionId: GV
+                    tier: 3
+                    notes: 'Target: Formal governance program with quarterly reviews.'
+                  - functionId: ID
+                    tier: 3
+                    notes: 'Target: Continuous asset discovery and automated risk scoring.'
+                  - functionId: PR
+                    tier: 3
+                    notes: 'Target: Zero-trust architecture fully deployed.'
+                  - functionId: DE
+                    tier: 3
+                    notes: 'Target: ML-based anomaly detection operational.'
+                  - functionId: RS
+                    tier: 3
+                    notes: 'Target: Tabletop exercises conducted quarterly.'
+                  - functionId: RC
+                    tier: 2
+                    notes: 'Target: Documented recovery playbooks; annual DR test.'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              examples:
+                Default:
+                  summary: Target profile approved
+                  value:
+                    id: prof-acme-tgt-001
+                    orgId: org-acme-001
+                    name: Acme FY2026 Target Profile
+                    type: target
+                    status: approved
+                    overallTier: 3
+                    description: Target cybersecurity posture for Acme by end of FY2026.
+                    functionTiers:
+                    - functionId: GV
+                      tier: 3
+                      notes: 'Target: Formal governance program with quarterly reviews.'
+                    - functionId: ID
+                      tier: 3
+                      notes: 'Target: Continuous asset discovery and automated risk scoring.'
+                    - functionId: PR
+                      tier: 3
+                      notes: 'Target: Zero-trust architecture fully deployed.'
+                    - functionId: DE
+                      tier: 3
+                      notes: 'Target: ML-based anomaly detection operational.'
+                    - functionId: RS
+                      tier: 3
+                      notes: 'Target: Tabletop exercises conducted quarterly.'
+                    - functionId: RC
+                      tier: 2
+                      notes: 'Target: Documented recovery playbooks; annual DR test.'
+                    categoryOutcomes: []
+                    createdAt: '2025-04-15T08:00:00Z'
+                    updatedAt: '2025-08-10T11:15:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}/assessments:
+    get:
+      operationId: listAssessments
+      summary: List assessments for an organization
+      tags:
+      - Assessments
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - $ref: '#/components/parameters/limitQuery'
+      - $ref: '#/components/parameters/offsetQuery'
+      responses:
+        '200':
+          description: Paginated assessments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentListResponse'
+              examples:
+                Default:
+                  summary: Acme assessment list
+                  value:
+                    total: 1
+                    limit: 20
+                    offset: 0
+                    items:
+                    - id: assess-acme-2025q2
+                      orgId: org-acme-001
+                      profileId: prof-acme-cur-001
+                      title: Acme Q2 2025 Cybersecurity Assessment
+                      status: completed
+                      assessor: Jane Rivera, CISSP
+                      completedAt: '2025-06-01T14:22:00Z'
+                      overallScore: 2.2
+                      createdAt: '2025-05-01T09:00:00Z'
+                      updatedAt: '2025-06-01T14:22:00Z'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+    post:
+      operationId: createAssessment
+      summary: Start a new assessment
+      tags:
+      - Assessments
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentCreate'
+            examples:
+              Default:
+                summary: Start Q2 2025 assessment
+                value:
+                  profileId: prof-acme-cur-001
+                  title: Acme Q2 2025 Cybersecurity Assessment
+                  assessor: Jane Rivera, CISSP
+                  scope: All business units and IT assets in North America.
+                  methodology: Interviews, document review, and technical testing.
+                  functionScores:
+                  - functionId: GV
+                    score: 2.3
+                    tier: 2
+                    findings:
+                    - subcategoryId: GV.OC-01
+                      score: 3
+                      implementationState: implemented
+                      evidence: Mission-aligned cybersecurity strategy document reviewed and signed by the board.
+                    - subcategoryId: GV.OC-02
+                      score: 2
+                      implementationState: partially_implemented
+                      evidence: Stakeholder register exists but has not been updated in 8 months.
+                    - subcategoryId: GV.OC-03
+                      score: 2
+                      implementationState: partially_implemented
+                      evidence: Legal/regulatory inventory exists; GDPR compliance gaps noted.
+                  - functionId: ID
+                    score: 2.5
+                    tier: 2
+                    findings:
+                    - subcategoryId: ID.AM-01
+                      score: 3
+                      implementationState: implemented
+                      evidence: CMDB covers 95% of hardware assets.
+                    - subcategoryId: ID.AM-02
+                      score: 2
+                      implementationState: partially_implemented
+                      evidence: Software inventory incomplete for shadow IT.
+                  - functionId: PR
+                    score: 2.8
+                    tier: 3
+                    findings:
+                    - subcategoryId: PR.AA-01
+                      score: 3
+                      implementationState: implemented
+                      evidence: Centralized IAM with MFA enforced for all privileged accounts.
+                  - functionId: DE
+                    score: 2.0
+                    tier: 2
+                    findings:
+                    - subcategoryId: DE.CM-01
+                      score: 2
+                      implementationState: partially_implemented
+                      evidence: Network monitoring covers 70% of segments; OT network gaps exist.
+                  - functionId: RS
+                    score: 1.5
+                    tier: 1
+                    findings:
+                    - subcategoryId: RS.MA-01
+                      score: 1
+                      implementationState: not_implemented
+                      evidence: Incident response plan drafted but never executed or tested.
+                  - functionId: RC
+                    score: 1.2
+                    tier: 1
+                    findings:
+                    - subcategoryId: RC.RP-01
+                      score: 1
+                      implementationState: not_implemented
+                      evidence: No formal recovery plan; backups exist but are untested.
+      responses:
+        '201':
+          description: Assessment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+              examples:
+                Default:
+                  summary: Assessment created
+                  value:
+                    id: assess-acme-2025q2
+                    orgId: org-acme-001
+                    profileId: prof-acme-cur-001
+                    title: Acme Q2 2025 Cybersecurity Assessment
+                    status: in_progress
+                    assessor: Jane Rivera, CISSP
+                    scope: All business units and IT assets in North America.
+                    methodology: Interviews, document review, and technical testing.
+                    overallScore: 2.2
+                    functionScores:
+                    - functionId: GV
+                      score: 2.3
+                      tier: 2
+                      findings:
+                      - subcategoryId: GV.OC-01
+                        score: 3
+                        implementationState: implemented
+                        evidence: Mission-aligned cybersecurity strategy document reviewed and signed by the board.
+                      - subcategoryId: GV.OC-02
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Stakeholder register exists but has not been updated in 8 months.
+                      - subcategoryId: GV.OC-03
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Legal/regulatory inventory exists; GDPR compliance gaps noted.
+                    - functionId: ID
+                      score: 2.5
+                      tier: 2
+                      findings:
+                      - subcategoryId: ID.AM-01
+                        score: 3
+                        implementationState: implemented
+                        evidence: CMDB covers 95% of hardware assets.
+                      - subcategoryId: ID.AM-02
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Software inventory incomplete for shadow IT.
+                    - functionId: PR
+                      score: 2.8
+                      tier: 3
+                      findings:
+                      - subcategoryId: PR.AA-01
+                        score: 3
+                        implementationState: implemented
+                        evidence: Centralized IAM with MFA enforced for all privileged accounts.
+                    - functionId: DE
+                      score: 2.0
+                      tier: 2
+                      findings:
+                      - subcategoryId: DE.CM-01
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Network monitoring covers 70% of segments; OT network gaps exist.
+                    - functionId: RS
+                      score: 1.5
+                      tier: 1
+                      findings:
+                      - subcategoryId: RS.MA-01
+                        score: 1
+                        implementationState: not_implemented
+                        evidence: Incident response plan drafted but never executed or tested.
+                    - functionId: RC
+                      score: 1.2
+                      tier: 1
+                      findings:
+                      - subcategoryId: RC.RP-01
+                        score: 1
+                        implementationState: not_implemented
+                        evidence: No formal recovery plan; backups exist but are untested.
+                    createdAt: '2025-05-01T09:00:00Z'
+                    updatedAt: '2025-05-01T09:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}/assessments/{assessmentId}:
+    get:
+      operationId: getAssessment
+      summary: Get full assessment details
+      tags:
+      - Assessments
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - name: assessmentId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: assess-acme-2025q2
+      responses:
+        '200':
+          description: Full assessment with all findings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+              examples:
+                Default:
+                  summary: Acme Q2 2025 full assessment
+                  value:
+                    id: assess-acme-2025q2
+                    orgId: org-acme-001
+                    profileId: prof-acme-cur-001
+                    title: Acme Q2 2025 Cybersecurity Assessment
+                    status: completed
+                    assessor: Jane Rivera, CISSP
+                    scope: All business units and IT assets in North America.
+                    methodology: Interviews, document review, and technical testing.
+                    overallScore: 2.2
+                    functionScores:
+                    - functionId: GV
+                      score: 2.3
+                      tier: 2
+                      findings:
+                      - subcategoryId: GV.OC-01
+                        score: 3
+                        implementationState: implemented
+                        evidence: Mission-aligned cybersecurity strategy document reviewed and signed by the board.
+                      - subcategoryId: GV.OC-02
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Stakeholder register exists but has not been updated in 8 months.
+                      - subcategoryId: GV.OC-03
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Legal/regulatory inventory exists; GDPR compliance gaps noted.
+                    - functionId: ID
+                      score: 2.5
+                      tier: 2
+                      findings:
+                      - subcategoryId: ID.AM-01
+                        score: 3
+                        implementationState: implemented
+                        evidence: CMDB covers 95% of hardware assets.
+                      - subcategoryId: ID.AM-02
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Software inventory incomplete for shadow IT.
+                    - functionId: PR
+                      score: 2.8
+                      tier: 3
+                      findings:
+                      - subcategoryId: PR.AA-01
+                        score: 3
+                        implementationState: implemented
+                        evidence: Centralized IAM with MFA enforced for all privileged accounts.
+                    - functionId: DE
+                      score: 2.0
+                      tier: 2
+                      findings:
+                      - subcategoryId: DE.CM-01
+                        score: 2
+                        implementationState: partially_implemented
+                        evidence: Network monitoring covers 70% of segments; OT network gaps exist.
+                    - functionId: RS
+                      score: 1.5
+                      tier: 1
+                      findings:
+                      - subcategoryId: RS.MA-01
+                        score: 1
+                        implementationState: not_implemented
+                        evidence: Incident response plan drafted but never executed or tested.
+                    - functionId: RC
+                      score: 1.2
+                      tier: 1
+                      findings:
+                      - subcategoryId: RC.RP-01
+                        score: 1
+                        implementationState: not_implemented
+                        evidence: No formal recovery plan; backups exist but are untested.
+                    completedAt: '2025-06-01T14:22:00Z'
+                    createdAt: '2025-05-01T09:00:00Z'
+                    updatedAt: '2025-06-01T14:22:00Z'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+    patch:
+      operationId: updateAssessmentStatus
+      summary: Update assessment status (e.g. complete it)
+      tags:
+      - Assessments
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - name: assessmentId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: assess-acme-2025q2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentStatusUpdate'
+            examples:
+              Default:
+                summary: Mark assessment as completed
+                value:
+                  status: completed
+      responses:
+        '200':
+          description: Assessment status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+              examples:
+                Default:
+                  summary: Assessment completed
+                  value:
+                    id: assess-acme-2025q2
+                    orgId: org-acme-001
+                    profileId: prof-acme-cur-001
+                    title: Acme Q2 2025 Cybersecurity Assessment
+                    status: completed
+                    assessor: Jane Rivera, CISSP
+                    overallScore: 2.2
+                    completedAt: '2025-06-01T14:22:00Z'
+                    createdAt: '2025-05-01T09:00:00Z'
+                    updatedAt: '2025-06-01T14:22:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}/gap-analysis:
+    post:
+      operationId: runGapAnalysis
+      summary: Run a gap analysis between two profiles
+      description: |
+        Compares a **current** profile with a **target** profile and produces
+        a function-by-function gap report with prioritized recommendations.
+      tags:
+      - Gap Analysis
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GapAnalysisRequest'
+            examples:
+              Default:
+                summary: Acme current vs target
+                value:
+                  currentProfileId: prof-acme-cur-001
+                  targetProfileId: prof-acme-tgt-001
+                  includeRecommendations: true
+      responses:
+        '200':
+          description: Gap analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GapAnalysisResponse'
+              examples:
+                Default:
+                  summary: Acme gap analysis result
+                  value:
+                    id: gap-acme-001
+                    orgId: org-acme-001
+                    currentProfileId: prof-acme-cur-001
+                    targetProfileId: prof-acme-tgt-001
+                    generatedAt: '2025-08-12T09:45:00Z'
+                    overallCurrentTier: 2
+                    overallTargetTier: 3
+                    overallGap: 1
+                    summary: Acme has significant gaps in Respond and Recover functions. Protect is closest to target. Governance
+                      and identification require moderate uplift.
+                    functionGaps:
+                    - functionId: GV
+                      functionName: Govern
+                      currentTier: 2
+                      targetTier: 3
+                      gap: 1
+                      priority: medium
+                      findings:
+                      - Cybersecurity policies exist but lack formal review cadence.
+                      - Risk appetite statement needs board-level reaffirmation.
+                      recommendations:
+                      - id: rec-gv-01
+                        title: Implement quarterly governance review cycle
+                        description: Establish a formal quarterly review of cybersecurity policies with executive sign-off.
+                        effort: medium
+                        priority: high
+                        estimatedCostUsd: 25000
+                        timelineMonths: 3
+                      - id: rec-gv-02
+                        title: Formalize supply chain risk management
+                        description: Develop and implement a third-party cybersecurity risk assessment program.
+                        effort: high
+                        priority: medium
+                        estimatedCostUsd: 75000
+                        timelineMonths: 6
+                    - functionId: ID
+                      functionName: Identify
+                      currentTier: 2
+                      targetTier: 3
+                      gap: 1
+                      priority: medium
+                      findings:
+                      - Asset discovery is periodic; shadow IT remains untracked.
+                      - Risk assessments lack automation.
+                      recommendations:
+                      - id: rec-id-01
+                        title: Deploy continuous asset discovery tooling
+                        description: Implement automated network and cloud asset discovery scanning.
+                        effort: medium
+                        priority: high
+                        estimatedCostUsd: 50000
+                        timelineMonths: 4
+                    - functionId: PR
+                      functionName: Protect
+                      currentTier: 3
+                      targetTier: 3
+                      gap: 0
+                      priority: low
+                      findings:
+                      - Protection controls meet target; maintain current posture.
+                      recommendations: []
+                    - functionId: DE
+                      functionName: Detect
+                      currentTier: 2
+                      targetTier: 3
+                      gap: 1
+                      priority: medium
+                      findings:
+                      - OT network segments lack monitoring coverage.
+                      recommendations:
+                      - id: rec-de-01
+                        title: Extend SIEM coverage to OT networks
+                        description: Deploy OT-specific sensors and integrate with central SIEM platform.
+                        effort: high
+                        priority: high
+                        estimatedCostUsd: 120000
+                        timelineMonths: 6
+                    - functionId: RS
+                      functionName: Respond
+                      currentTier: 1
+                      targetTier: 3
+                      gap: 2
+                      priority: critical
+                      findings:
+                      - Incident response plan has never been tested.
+                      - No dedicated IR team; relies on ad-hoc assignments.
+                      recommendations:
+                      - id: rec-rs-01
+                        title: Establish dedicated incident response team
+                        description: Hire or assign 3-5 FTEs to a dedicated CSIRT with on-call rotation.
+                        effort: high
+                        priority: critical
+                        estimatedCostUsd: 350000
+                        timelineMonths: 6
+                      - id: rec-rs-02
+                        title: Conduct quarterly tabletop exercises
+                        description: Design and execute scenario-based tabletop exercises with executive participation.
+                        effort: low
+                        priority: critical
+                        estimatedCostUsd: 15000
+                        timelineMonths: 2
+                    - functionId: RC
+                      functionName: Recover
+                      currentTier: 1
+                      targetTier: 2
+                      gap: 1
+                      priority: high
+                      findings:
+                      - No documented recovery playbooks.
+                      - Backup restoration has never been tested end-to-end.
+                      recommendations:
+                      - id: rec-rc-01
+                        title: Develop and test recovery playbooks
+                        description: Document recovery procedures for top-10 critical systems and conduct annual DR exercises.
+                        effort: medium
+                        priority: high
+                        estimatedCostUsd: 40000
+                        timelineMonths: 4
+                    totalEstimatedCostUsd: 675000
+                    estimatedTimelineMonths: 12
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+  /organizations/{orgId}/gap-analysis/{gapId}:
+    get:
+      operationId: getGapAnalysis
+      summary: Retrieve a previously generated gap analysis
+      tags:
+      - Gap Analysis
+      parameters:
+      - $ref: '#/components/parameters/orgIdPath'
+      - name: gapId
+        in: path
+        required: true
+        schema:
+          type: string
+        example: gap-acme-001
+      responses:
+        '200':
+          description: Gap analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GapAnalysisResponse'
+              examples:
+                Default:
+                  summary: Retrieved Acme gap analysis
+                  value:
+                    id: gap-acme-001
+                    orgId: org-acme-001
+                    currentProfileId: prof-acme-cur-001
+                    targetProfileId: prof-acme-tgt-001
+                    generatedAt: '2025-08-12T09:45:00Z'
+                    overallCurrentTier: 2
+                    overallTargetTier: 3
+                    overallGap: 1
+                    summary: Acme has significant gaps in Respond and Recover functions.
+                    functionGaps: []
+                    totalEstimatedCostUsd: 675000
+                    estimatedTimelineMonths: 12
+        '404':
+          $ref: '#/components/responses/NotFound'
+      x-microcks-operation:
+        dispatcher: SCRIPT
+        dispatcherRules: return "Default"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'Sandbox JWT — use `Authorization: Bearer sandbox-token-acme-001` for testing.'
+  parameters:
+    orgIdPath:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: org-acme-001
+    profileIdPath:
+      name: profileId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: prof-acme-cur-001
+    functionIdPath:
+      name: functionId
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - GV
+        - ID
+        - PR
+        - DE
+        - RS
+        - RC
+      example: GV
+    limitQuery:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    offsetQuery:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+  responses:
+    BadRequest:
+      description: Invalid request body or parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Default:
+              value:
+                code: BAD_REQUEST
+                message: 'Validation failed: ''name'' is required.'
+                details:
+                - field: name
+                  issue: must not be blank
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            Default:
+              value:
+                code: NOT_FOUND
+                message: The requested resource was not found.
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+    CsfFunction:
+      type: object
+      required:
+      - id
+      - name
+      - description
+      properties:
+        id:
+          type: string
+          description: Function code (GV, ID, PR, DE, RS, RC)
+          enum:
+          - GV
+          - ID
+          - PR
+          - DE
+          - RS
+          - RC
+        name:
+          type: string
+        description:
+          type: string
+    CsfCategory:
+      type: object
+      required:
+      - id
+      - functionId
+      - name
+      - description
+      properties:
+        id:
+          type: string
+          description: Category code, e.g. GV.OC
+        functionId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    CsfSubcategory:
+      type: object
+      required:
+      - id
+      - categoryId
+      - name
+      - description
+      properties:
+        id:
+          type: string
+          description: Subcategory code, e.g. GV.OC-01
+        categoryId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    OrganizationCreate:
+      type: object
+      required:
+      - name
+      - industry
+      - size
+      properties:
+        name:
+          type: string
+        industry:
+          type: string
+        size:
+          type: string
+          enum:
+          - small
+          - medium
+          - large
+          - enterprise
+        description:
+          type: string
+        contactEmail:
+          type: string
+          format: email
+    Organization:
+      allOf:
+      - $ref: '#/components/schemas/OrganizationCreate'
+      - type: object
+        required:
+        - id
+        - createdAt
+        - updatedAt
+        properties:
+          id:
+            type: string
+          createdAt:
+            type: string
+            format: date-time
+          updatedAt:
+            type: string
+            format: date-time
+    OrganizationListResponse:
+      type: object
+      required:
+      - total
+      - limit
+      - offset
+      - items
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+    ImplementationTier:
+      type: integer
+      minimum: 1
+      maximum: 4
+      description: 1=Partial, 2=Risk Informed, 3=Repeatable, 4=Adaptive
+    ImplementationState:
+      type: string
+      enum:
+      - not_implemented
+      - partially_implemented
+      - implemented
+      - advanced
+    FunctionTier:
+      type: object
+      required:
+      - functionId
+      - tier
+      properties:
+        functionId:
+          type: string
+          enum:
+          - GV
+          - ID
+          - PR
+          - DE
+          - RS
+          - RC
+        tier:
+          $ref: '#/components/schemas/ImplementationTier'
+        notes:
+          type: string
+    CategoryOutcome:
+      type: object
+      required:
+      - categoryId
+      - tier
+      - currentState
+      properties:
+        categoryId:
+          type: string
+        tier:
+          $ref: '#/components/schemas/ImplementationTier'
+        currentState:
+          $ref: '#/components/schemas/ImplementationState'
+        notes:
+          type: string
+    ProfileCreate:
+      type: object
+      required:
+      - name
+      - type
+      - overallTier
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - current
+          - target
+        overallTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        description:
+          type: string
+        functionTiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionTier'
+        categoryOutcomes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryOutcome'
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - in_review
+          - approved
+          - archived
+        overallTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        description:
+          type: string
+        functionTiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionTier'
+        categoryOutcomes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryOutcome'
+    ProfileSummary:
+      type: object
+      required:
+      - id
+      - orgId
+      - name
+      - type
+      - status
+      - overallTier
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        orgId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - current
+          - target
+        status:
+          type: string
+          enum:
+          - draft
+          - in_review
+          - approved
+          - archived
+        overallTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Profile:
+      allOf:
+      - $ref: '#/components/schemas/ProfileSummary'
+      - type: object
+        properties:
+          description:
+            type: string
+          functionTiers:
+            type: array
+            items:
+              $ref: '#/components/schemas/FunctionTier'
+          categoryOutcomes:
+            type: array
+            items:
+              $ref: '#/components/schemas/CategoryOutcome'
+    SubcategoryFinding:
+      type: object
+      required:
+      - subcategoryId
+      - score
+      - implementationState
+      properties:
+        subcategoryId:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 4
+          description: 0=Not Assessed, 1=Not Implemented, 2=Partial, 3=Implemented, 4=Advanced
+        implementationState:
+          $ref: '#/components/schemas/ImplementationState'
+        evidence:
+          type: string
+    FunctionScore:
+      type: object
+      required:
+      - functionId
+      - score
+      - tier
+      properties:
+        functionId:
+          type: string
+          enum:
+          - GV
+          - ID
+          - PR
+          - DE
+          - RS
+          - RC
+        score:
+          type: number
+          minimum: 0
+          maximum: 4
+        tier:
+          $ref: '#/components/schemas/ImplementationTier'
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubcategoryFinding'
+    AssessmentCreate:
+      type: object
+      required:
+      - profileId
+      - title
+      - assessor
+      - functionScores
+      properties:
+        profileId:
+          type: string
+        title:
+          type: string
+        assessor:
+          type: string
+        scope:
+          type: string
+        methodology:
+          type: string
+        functionScores:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionScore'
+    AssessmentStatusUpdate:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - in_progress
+          - in_review
+          - completed
+          - cancelled
+    Assessment:
+      type: object
+      required:
+      - id
+      - orgId
+      - profileId
+      - title
+      - status
+      - overallScore
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: string
+        orgId:
+          type: string
+        profileId:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+          - in_progress
+          - in_review
+          - completed
+          - cancelled
+        assessor:
+          type: string
+        scope:
+          type: string
+        methodology:
+          type: string
+        overallScore:
+          type: number
+          minimum: 0
+          maximum: 4
+        functionScores:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionScore'
+        completedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AssessmentListResponse:
+      type: object
+      required:
+      - total
+      - limit
+      - offset
+      - items
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Assessment'
+    GapAnalysisRequest:
+      type: object
+      required:
+      - currentProfileId
+      - targetProfileId
+      properties:
+        currentProfileId:
+          type: string
+        targetProfileId:
+          type: string
+        includeRecommendations:
+          type: boolean
+          default: true
+    Recommendation:
+      type: object
+      required:
+      - id
+      - title
+      - description
+      - effort
+      - priority
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        effort:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+        priority:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          - critical
+        estimatedCostUsd:
+          type: integer
+        timelineMonths:
+          type: integer
+    FunctionGap:
+      type: object
+      required:
+      - functionId
+      - functionName
+      - currentTier
+      - targetTier
+      - gap
+      - priority
+      properties:
+        functionId:
+          type: string
+          enum:
+          - GV
+          - ID
+          - PR
+          - DE
+          - RS
+          - RC
+        functionName:
+          type: string
+        currentTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        targetTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        gap:
+          type: integer
+          description: targetTier − currentTier
+        priority:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          - critical
+        findings:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+    GapAnalysisResponse:
+      type: object
+      required:
+      - id
+      - orgId
+      - currentProfileId
+      - targetProfileId
+      - generatedAt
+      - overallCurrentTier
+      - overallTargetTier
+      - overallGap
+      - summary
+      - functionGaps
+      properties:
+        id:
+          type: string
+        orgId:
+          type: string
+        currentProfileId:
+          type: string
+        targetProfileId:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        overallCurrentTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        overallTargetTier:
+          $ref: '#/components/schemas/ImplementationTier'
+        overallGap:
+          type: integer
+        summary:
+          type: string
+        functionGaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionGap'
+        totalEstimatedCostUsd:
+          type: integer
+        estimatedTimelineMonths:
+          type: integer
