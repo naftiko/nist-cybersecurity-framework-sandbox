@@ -1,0 +1,18 @@
+name = "naftiko-nist-cybersecurity-framework-sandbox"
+main = "src/index.ts"
+compatibility_date = "2026-05-06"
+compatibility_flags = ["nodejs_compat"]
+
+[[containers]]
+class_name = "NistCybersecurityFrameworkSandboxContainer"
+image = "./Dockerfile"
+instance_type = "standard-1"
+max_instances = 1
+
+[[durable_objects.bindings]]
+name = "NIST_CYBERSECURITY_FRAMEWORK_SANDBOX"
+class_name = "NistCybersecurityFrameworkSandboxContainer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["NistCybersecurityFrameworkSandboxContainer"]

@@ -1,0 +1,96 @@
+naftiko: "1.0.0-alpha2"
+
+info:
+  label: "Nist Cybersecurity Framework Sandbox"
+  description: "Naftiko Sandbox — wraps the Nist Cybersecurity Framework API mocks hosted at mocks.naftiko.net. Exposes MCP, REST, and Skill adapters for AI agents and downstream tools."
+  tags:
+    - "Nist Cybersecurity Framework"
+    - "Naftiko Sandbox"
+    - MCP
+    - Mocks
+
+binds:
+  - namespace: "sandbox-env"
+    description: "Sandbox bearer token for the Naftiko Framework MCP server."
+    location: "file:///./shared/secrets.yaml"
+    keys:
+      MCP_SERVER_TOKEN: "mcp-server-token"
+
+capability:
+  consumes:
+    - import: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API
+      location: ./shared/NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API-consumes.yml
+
+  exposes:
+    - type: mcp
+      address: "0.0.0.0"
+      port: 3001
+      namespace: nist-cybersecurity-framework-sandbox-tools
+      authentication:
+        type: bearer
+        token: "{{MCP_SERVER_TOKEN}}"
+      description: "Nist Cybersecurity Framework MCP tools — backed by mocks.naftiko.net"
+      tools:
+        - name: get-assessment
+          description: "Get full assessment details"
+          call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-assessment
+          inputParameters:
+            - name: assessmentId
+              in: path
+              required: true
+        - name: get-gap-analysis
+          description: "Retrieve a previously generated gap analysis"
+          call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-gap-analysis
+          inputParameters:
+            - name: gapId
+              in: path
+              required: true
+        - name: get-organization
+          description: "Get organization details"
+          call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-organization
+
+    - type: rest
+      address: "0.0.0.0"
+      port: 3002
+      namespace: nist-cybersecurity-framework-sandbox-api
+      description: "Nist Cybersecurity Framework REST adapter — exposes the same domain as REST resources."
+      resources:
+        - name: get-assessment
+          path: "/get-assessment"
+          operations:
+            - method: GET
+              call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-assessment
+              inputParameters:
+                - name: assessmentId
+                  in: path
+                  required: true
+        - name: get-gap-analysis
+          path: "/get-gap-analysis"
+          operations:
+            - method: GET
+              call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-gap-analysis
+              inputParameters:
+                - name: gapId
+                  in: path
+                  required: true
+        - name: get-organization
+          path: "/get-organization"
+          operations:
+            - method: GET
+              call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-organization
+
+    - type: skill
+      address: "0.0.0.0"
+      port: 3003
+      namespace: nist-cybersecurity-framework-sandbox-skills
+      description: "Nist Cybersecurity Framework skill server for structured agent discovery."
+      groups:
+        - name: read-nist-cybersecurity-framework
+          description: "Read-only Nist Cybersecurity Framework operations."
+          skills:
+            - name: get-assessment
+              call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-assessment
+            - name: get-gap-analysis
+              call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-gap-analysis
+            - name: get-organization
+              call: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API.get-organization

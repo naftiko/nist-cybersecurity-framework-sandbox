@@ -1,0 +1,29 @@
+naftiko: "1.0.0-alpha2"
+consumes:
+  - namespace: NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API
+    type: http
+    baseUri: "https://mocks.naftiko.net/rest/NIST Cybersecurity Framework (CSF) 2.0 — Sandbox API/1.0.0"
+    resources:
+      - name: get-assessment
+        path: "/organizations/{{orgId}}/assessments/{{assessmentId}}"
+        operations:
+          - name: get-assessment
+            method: GET
+            inputParameters:
+              - name: assessmentId
+                in: path
+                required: true
+      - name: get-gap-analysis
+        path: "/organizations/{{orgId}}/gap-analysis/{{gapId}}"
+        operations:
+          - name: get-gap-analysis
+            method: GET
+            inputParameters:
+              - name: gapId
+                in: path
+                required: true
+      - name: get-organization
+        path: "/organizations/{{orgId}}"
+        operations:
+          - name: get-organization
+            method: GET

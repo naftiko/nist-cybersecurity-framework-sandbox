@@ -1,0 +1,19 @@
+{
+  "name": "naftiko-nist-cybersecurity-framework-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-click container deploy of a Naftiko Framework capability that wraps the Nist Cybersecurity Framework API mocks at mocks.naftiko.net.",
+  "scripts": {
+    "deploy": "npx wrangler deploy",
+    "dev": "npx wrangler dev",
+    "tail": "npx wrangler tail"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.0.13"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250401.0",
+    "typescript": "^5.4.5",
+    "wrangler": "^4.0.0"
+  }
+}
